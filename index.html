@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>XIMEA-DRSA 买车决策演示</title>
+<style>
+  :root {
+    --ink: #151711;
+    --muted: #697067;
+    --paper: #f3f1e9;
+    --panel: #fffdf6;
+    --line: #d8d3c2;
+    --green: #1d6f55;
+    --green-2: #b8d9c9;
+    --red: #a94f45;
+    --red-2: #efd0ca;
+    --blue: #2e5d93;
+    --gold: #c9922e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    background:
+      linear-gradient(90deg, rgba(21,23,17,.035) 1px, transparent 1px),
+      linear-gradient(rgba(21,23,17,.035) 1px, transparent 1px),
+      var(--paper);
+    background-size: 28px 28px;
+    color: var(--ink);
+  }
+  .shell {
+    width: min(1360px, calc(100vw - 42px));
+    margin: 0 auto;
+    padding: 24px 0 28px;
+  }
+  .hero {
+    display: grid;
+    grid-template-columns: 1.25fr .75fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+  .mast {
+    background: var(--ink);
+    color: var(--panel);
+    border-radius: 8px;
+    padding: 24px 28px;
+    min-height: 154px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mast::after {
+    content: "";
+    position: absolute;
+    right: -70px;
+    top: -76px;
+    width: 260px;
+    height: 260px;
+    border: 36px solid rgba(184,217,201,.22);
+    transform: rotate(18deg);
+  }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: .16em;
+    color: var(--green-2);
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+  h1 {
+    margin: 14px 0 0;
+    font-size: clamp(34px, 4.8vw, 66px);
+    line-height: .98;
+    letter-spacing: 0;
+    max-width: 920px;
+  }
+  .hero-sub {
+    margin-top: 14px;
+    color: rgba(255,253,246,.78);
+    font-size: 17px;
+    line-height: 1.55;
+    max-width: 760px;
+  }
+  .control-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 154px;
+  }
+  .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  button {
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--panel);
+    border-radius: 6px;
+    min-height: 42px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  button.alt { background: transparent; color: var(--ink); }
+  button:hover { transform: translateY(-1px); }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    min-height: 82px;
+  }
+  .stat strong {
+    display: block;
+    font-size: 30px;
+    color: var(--green);
+    line-height: 1;
+  }
+  .stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  .main {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: minmax(680px, 1.35fr) minmax(360px, .75fr);
+    gap: 18px;
+  }
+  .panel {
+    background: rgba(255,253,246,.94);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: start;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+  .panel h2 {
+    margin: 0;
+    font-size: 21px;
+  }
+  .hint {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .chart {
+    height: 560px;
+    position: relative;
+  }
+  svg { width: 100%; height: 100%; display: block; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .swatch {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: -1px;
+  }
+  .rules {
+    display: grid;
+    gap: 10px;
+  }
+  .rule {
+    border-radius: 7px;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid transparent;
+  }
+  .rule.good { background: #e2efe8; color: #104c39; border-color: #b7d5c7; }
+  .rule.bad { background: #f4dfdc; color: #8d382f; border-color: #e5bdb7; }
+  .rule small { display: block; color: var(--muted); margin-top: 4px; }
+  .mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .mini {
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 12px;
+    background: #fffaf0;
+  }
+  .mini b { color: var(--green); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+  th, td {
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e0d1;
+    text-align: left;
+    white-space: nowrap;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 800;
+  }
+  .flow {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .step {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-height: 116px;
+    padding: 16px;
+  }
+  .step b {
+    display: block;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .step p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+    font-size: 13px;
+  }
+  .car-card {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    width: 255px;
+    background: rgba(21,23,17,.92);
+    color: var(--panel);
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 18px 50px rgba(21,23,17,.22);
+  }
+  .car-card .name { font-size: 18px; font-weight: 900; }
+  .car-card .meta { color: rgba(255,253,246,.7); margin-top: 7px; font-size: 12px; line-height: 1.55; }
+  .bar {
+    height: 8px;
+    background: rgba(255,255,255,.14);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .bar > i { display: block; height: 100%; background: var(--green-2); width: 0%; }
+  @media (max-width: 1080px) {
+    .hero, .main, .flow { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <section class="hero">
+    <div class="mast">
+      <div class="eyebrow">XIMEA-DRSA · car buying decision demo</div>
+      <h1>让算法像销售顾问一样，越问越懂你想买什么车</h1>
+      <div class="hero-sub">现场演示：价格、续航、保养成本、性能相互冲突。决策者只标注少量车型 good / bad，系统归纳可解释规则，再把下一代候选车型推向偏好区域。</div>
+    </div>
+    <div class="control-card">
+      <div>
+        <div class="eyebrow" style="color:var(--green)">现场控制台</div>
+        <div class="hint" style="margin-top:10px;">不需要本地环境，不需要联网库。GitHub Pages 打开后直接点按钮即可演示。</div>
+      </div>
+      <div class="buttons">
+        <button onclick="runRound()">运行一次交互</button>
+        <button onclick="autoRun()">自动运行 6 轮</button>
+        <button class="alt" onclick="resetDemo()">重置演示</button>
+        <button class="alt" onclick="togglePreference()">切换偏好</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><strong id="round">0</strong><span>交互轮次</span></div>
+    <div class="stat"><strong id="bestName">--</strong><span>当前推荐车型</span></div>
+    <div class="stat"><strong id="bestScore">--</strong><span>隐藏满意度分数</span></div>
+    <div class="stat"><strong id="ruleCount">0</strong><span>累计可解释规则</span></div>
+  </section>
+
+  <section class="main">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>车型候选空间</h2>
+          <div class="hint">横轴价格，越左越便宜；纵轴续航，越上越高。点越大代表综合规则得分越高。</div>
+        </div>
+        <div class="hint" id="prefText">当前偏好：预算敏感，同时要求续航可靠。</div>
+      </div>
+      <div class="chart">
+        <svg id="chart" viewBox="0 0 820 560"></svg>
+        <div class="car-card" id="bestCard"></div>
+      </div>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--ink)"></i>普通候选车</span>
+        <span><i class="swatch" style="background:var(--green)"></i>本轮 good</span>
+        <span><i class="swatch" style="background:var(--red)"></i>本轮 bad</span>
+        <span><i class="swatch" style="background:var(--blue)"></i>当前推荐</span>
+        <span><i class="swatch" style="background:var(--gold)"></i>Pareto 前沿</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>DRSA 规则与参考车型</h2>
+          <div class="hint">这里用隐藏函数模拟决策者；课堂上可以说明真实论文由人手动分类。</div>
+        </div>
+      </div>
+      <div class="rules" id="rules"></div>
+      <div class="mini-grid">
+        <div class="mini"><b>good 规则</b><div class="hint">匹配越多，车型越容易被保留并作为父代。</div></div>
+        <div class="mini"><b>bad 规则</b><div class="hint">匹配越多，车型越容易在排序中后移。</div></div>
+      </div>
+      <table>
+        <thead><tr><th>车型</th><th>价格</th><th>续航</th><th>判断</th></tr></thead>
+        <tbody id="refs"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="flow">
+    <div class="step"><b>1. 生成车型</b><p>随机产生一批候选车，每辆车有价格、续航、保养费、性能四个属性。</p></div>
+    <div class="step"><b>2. 轻量交互</b><p>每轮只展示 6 辆参考车，决策者只需判断 good 或 bad。</p></div>
+    <div class="step"><b>3. 诱导规则</b><p>从分类样本中归纳 if-then 规则，例如“价格不高且续航够长”。</p></div>
+    <div class="step"><b>4. 引导进化</b><p>规则得分进入排序，交叉变异后，新车型更靠近偏好区域。</p></div>
+  </section>
+</div>
+
+<script>
+const N = 90;
+const K = 6;
+const MAX_RULES = 12;
+const GAMMA = 0.32;
+const names = ["Aster", "Boreal", "CivicOne", "Dawn EV", "Edge", "Flux", "Gala", "Horizon", "Ion", "Juno", "Kite", "Luma", "Metro", "Nova", "Orbit", "Pulse", "Quartz", "Rover", "Sol", "Tempo"];
+let cars = [];
+let refs = [];
+let rules = [];
+let round = 0;
+let prefMode = 0;
+let timer = null;
+
+function rnd(a,b){ return a + Math.random()*(b-a); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function carName(i){ return names[i % names.length] + " " + (100 + (i * 17) % 880); }
+function makeCar(i, price, range, maint, power){
+  return { id: i, name: carName(i), price: clamp(price, 8, 45), range: clamp(range, 280, 760), maint: clamp(maint, 0.4, 2.4), power: clamp(power, 80, 360), score: 0, rank: 0 };
+}
+function utility(c){
+  if(prefMode === 0){
+    return 100 - (1.42*c.price) + (0.078*c.range) - (10.5*c.maint) + (0.018*c.power);
+  }
+  return 100 - (0.82*c.price) + (0.045*c.range) - (7.2*c.maint) + (0.105*c.power);
+}
+function resetDemo(){
+  if(timer) clearInterval(timer);
+  timer = null;
+  round = 0; refs = []; rules = [];
+  cars = Array.from({length:N}, (_,i)=> makeCar(i+1, rnd(10,43), rnd(300,720), rnd(.55,2.2), rnd(90,330)));
+  evaluate();
+  render();
+}
+function togglePreference(){
+  prefMode = prefMode ? 0 : 1;
+  document.getElementById("prefText").textContent = prefMode === 0 ? "当前偏好：预算敏感，同时要求续航可靠。" : "当前偏好：愿意多花钱，但更看重性能和驾驶体验。";
+  runRound();
+}
+function dominates(a,b){
+  const betterOrEqual = a.price <= b.price && a.range >= b.range && a.maint <= b.maint && a.power >= b.power;
+  const strictly = a.price < b.price || a.range > b.range || a.maint < b.maint || a.power > b.power;
+  return betterOrEqual && strictly;
+}
+function rankFronts(list){
+  const remaining = [...list];
+  let rank = 1;
+  while(remaining.length){
+    const front = remaining.filter(x => !remaining.some(y => y !== x && dominates(y,x)));
+    front.forEach(x => x.rank = rank);
+    front.forEach(x => remaining.splice(remaining.indexOf(x),1));
+    rank++;
+  }
+}
+function w(rule){ return Math.exp(-GAMMA * (round - rule.born)); }
+function matches(c,r){
+  if(r.type === "good") return c.price <= r.price && c.range >= r.range && c.maint <= r.maint;
+  return c.price >= r.price || c.range <= r.range || c.maint >= r.maint;
+}
+function evaluate(){
+  rankFronts(cars);
+  cars.forEach(c => {
+    const good = rules.filter(r => r.type === "good" && matches(c,r)).reduce((s,r)=>s+w(r),0);
+    const bad = rules.filter(r => r.type === "bad" && matches(c,r)).reduce((s,r)=>s+w(r),0);
+    c.score = good - bad;
+  });
+  cars.sort((a,b)=> a.rank-b.rank || b.score-a.score || utility(b)-utility(a));
+}
+function pickRefs(){
+  evaluate();
+  const pool = cars.slice(0, Math.min(32,cars.length));
+  const picked = [];
+  const used = new Set();
+  while(picked.length<K && used.size<pool.length){
+    const idx = Math.floor(Math.random()*pool.length);
+    if(!used.has(idx)){ used.add(idx); picked.push(pool[idx]); }
+  }
+  picked.sort((a,b)=>utility(b)-utility(a));
+  const threshold = utility(picked[Math.floor(K/2)-1]);
+  return picked.map(c => ({...c, label: utility(c) >= threshold ? "good" : "bad"}));
+}
+function induce(){
+  const good = refs.filter(x=>x.label==="good");
+  const bad = refs.filter(x=>x.label==="bad");
+  if(good.length){
+    rules.push({ type:"good", price: Math.ceil(Math.max(...good.map(x=>x.price))), range: Math.floor(Math.min(...good.map(x=>x.range))), maint: +(Math.max(...good.map(x=>x.maint))).toFixed(1), born: round });
+  }
+  if(bad.length){
+    rules.push({ type:"bad", price: Math.floor(Math.min(...bad.map(x=>x.price))), range: Math.ceil(Math.max(...bad.map(x=>x.range))), maint: +(Math.min(...bad.map(x=>x.maint))).toFixed(1), born: round });
+  }
+  while(rules.length > MAX_RULES) rules.shift();
+}
+function evolve(){
+  evaluate();
+  const elite = cars.slice(0,20);
+  const next = elite.map((c,i)=>makeCar(i+1,c.price,c.range,c.maint,c.power));
+  while(next.length<N){
+    const a = elite[Math.floor(Math.random()*elite.length)];
+    const b = elite[Math.floor(Math.random()*elite.length)];
+    next.push(makeCar(next.length+1,
+      (a.price+b.price)/2 + rnd(-3.2,2.2),
+      (a.range+b.range)/2 + rnd(-38,48),
+      (a.maint+b.maint)/2 + rnd(-.18,.18),
+      (a.power+b.power)/2 + rnd(-22,28)
+    ));
+  }
+  cars = next;
+  evaluate();
+}
+function runRound(){
+  round++;
+  refs = pickRefs();
+  induce();
+  for(let i=0;i<8;i++) evolve();
+  render();
+}
+function autoRun(){
+  if(timer) clearInterval(timer);
+  let n = 0;
+  timer = setInterval(()=>{
+    runRound();
+    n++;
+    if(n>=6){ clearInterval(timer); timer = null; }
+  }, 850);
+}
+function sx(price){ return 74 + (price-8)/(45-8)*650; }
+function sy(range){ return 478 - (range-280)/(760-280)*380; }
+function colorFor(c, bestId, refMap){
+  if(c.id === bestId) return "var(--blue)";
+  if(refMap.get(c.id)==="good") return "var(--green)";
+  if(refMap.get(c.id)==="bad") return "var(--red)";
+  if(c.rank===1) return "var(--gold)";
+  return "var(--ink)";
+}
+function renderChart(){
+  const svg = document.getElementById("chart");
+  const best = [...cars].sort((a,b)=>utility(b)-utility(a))[0];
+  const refMap = new Map(refs.map(x=>[x.id,x.label]));
+  const front = cars.filter(c=>c.rank===1).sort((a,b)=>a.price-b.price);
+  const frontLine = front.length>1 ? `<polyline points="${front.map(c=>`${sx(c.price)},${sy(c.range)}`).join(" ")}" fill="none" stroke="#c9922e" stroke-width="3" opacity=".8"/>` : "";
+  const axis = `
+    <rect x="0" y="0" width="820" height="560" fill="#fffdf6"/>
+    <rect x="74" y="98" width="650" height="380" fill="#f9f5e9" stroke="#d8d3c2"/>
+    <rect x="74" y="98" width="220" height="142" fill="#dceee5" opacity=".72"/>
+    <line x1="74" y1="478" x2="724" y2="478" stroke="#8d927f"/>
+    <line x1="74" y1="98" x2="74" y2="478" stroke="#8d927f"/>
+    <text x="310" y="530" fill="#697067" font-size="15">价格 price：越左越便宜</text>
+    <text x="24" y="84" fill="#697067" font-size="15">续航 range：越上越长</text>
+    <text x="102" y="128" fill="#1d6f55" font-size="14" font-weight="800">偏好区域</text>
+  `;
+  const points = cars.map(c=>{
+    const r = c.id===best.id ? 10 : Math.max(4, Math.min(9, 5 + c.score*1.3));
+    const op = c.rank===1 || refMap.has(c.id) || c.id===best.id ? .95 : .38;
+    return `<circle cx="${sx(c.price).toFixed(1)}" cy="${sy(c.range).toFixed(1)}" r="${r.toFixed(1)}" fill="${colorFor(c,best.id,refMap)}" opacity="${op}"><title>${c.name} price=${c.price.toFixed(1)} range=${c.range.toFixed(0)}</title></circle>`;
+  }).join("");
+  svg.innerHTML = axis + frontLine + points;
+}
+function renderRules(){
+  const box = document.getElementById("rules");
+  if(!rules.length){
+    box.innerHTML = `<div class="hint">暂无规则。点击“运行一次交互”后，这里会出现从 good / bad 车型中归纳出的 if-then 规则。</div>`;
+    return;
+  }
+  box.innerHTML = rules.slice(-5).reverse().map(r=>{
+    const cls = r.type==="good" ? "good" : "bad";
+    const text = r.type==="good"
+      ? `if 价格 ≤ ${r.price}万 且 续航 ≥ ${r.range}km 且 保养 ≤ ${r.maint}k, then GOOD`
+      : `if 价格 ≥ ${r.price}万 或 续航 ≤ ${r.range}km 或 保养 ≥ ${r.maint}k, then BAD`;
+    return `<div class="rule ${cls}">${text}<small>born=${r.born}，时间衰减后当前权重=${w(r).toFixed(2)}</small></div>`;
+  }).join("");
+}
+function renderRefs(){
+  const body = document.getElementById("refs");
+  if(!refs.length){
+    body.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">等待第一次交互。</td></tr>`;
+    return;
+  }
+  body.innerHTML = refs.map(c=>`<tr>
+    <td>${c.name}</td>
+    <td>${c.price.toFixed(1)}万</td>
+    <td>${c.range.toFixed(0)}km</td>
+    <td style="font-weight:900;color:${c.label==="good" ? "var(--green)" : "var(--red)"}">${c.label.toUpperCase()}</td>
+  </tr>`).join("");
+}
+function renderBest(){
+  const best = [...cars].sort((a,b)=>utility(b)-utility(a))[0];
+  document.getElementById("bestName").textContent = best.name.split(" ")[0];
+  document.getElementById("bestScore").textContent = utility(best).toFixed(1);
+  document.getElementById("bestCard").innerHTML = `
+    <div class="name">${best.name}</div>
+    <div class="meta">价格 ${best.price.toFixed(1)} 万 · 续航 ${best.range.toFixed(0)} km<br>保养 ${best.maint.toFixed(1)}k/年 · 性能 ${best.power.toFixed(0)} hp</div>
+    <div class="bar"><i style="width:${Math.max(8,Math.min(100,utility(best))).toFixed(1)}%"></i></div>
+  `;
+}
+function render(){
+  evaluate();
+  document.getElementById("round").textContent = round;
+  document.getElementById("ruleCount").textContent = rules.length;
+  renderBest();
+  renderChart();
+  renderRules();
+  renderRefs();
+}
+resetDemo();
+</script>
+</body>
+</html>
