@@ -3,555 +3,335 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>XIMEA-DRSA 买车决策演示</title>
+<title>XIMEA-DRSA 交互式论文实验演示</title>
 <style>
-  :root {
-    --ink: #151711;
-    --muted: #697067;
-    --paper: #f3f1e9;
-    --panel: #fffdf6;
-    --line: #d8d3c2;
-    --green: #1d6f55;
-    --green-2: #b8d9c9;
-    --red: #a94f45;
-    --red-2: #efd0ca;
-    --blue: #2e5d93;
-    --gold: #c9922e;
+  :root{
+    --ink:#11140f;--muted:#656b61;--paper:#f4f1e8;--panel:#fffdf6;--line:#d8d2bf;
+    --green:#1b6d50;--green2:#dceee5;--red:#a24a40;--red2:#f2deda;--gold:#c5902e;
+    --blue:#2c6097;--violet:#6b5ca5;--shadow:0 20px 60px rgba(17,20,15,.12)
   }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; }
-  body {
-    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
-    background:
-      linear-gradient(90deg, rgba(21,23,17,.035) 1px, transparent 1px),
-      linear-gradient(rgba(21,23,17,.035) 1px, transparent 1px),
-      var(--paper);
-    background-size: 28px 28px;
-    color: var(--ink);
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif;color:var(--ink);
+    background:linear-gradient(90deg,rgba(17,20,15,.035) 1px,transparent 1px),
+      linear-gradient(rgba(17,20,15,.035) 1px,transparent 1px),var(--paper);
+    background-size:30px 30px
   }
-  .shell {
-    width: min(1360px, calc(100vw - 42px));
-    margin: 0 auto;
-    padding: 24px 0 28px;
+  .shell{width:min(1460px,calc(100vw - 36px));margin:0 auto;padding:20px 0 28px}
+  .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+  .mast{position:relative;overflow:hidden;border-radius:8px;background:var(--ink);color:var(--panel);padding:24px 28px;min-height:164px}
+  .mast:after{content:"";position:absolute;right:-84px;top:-92px;width:312px;height:312px;border:42px solid rgba(220,238,229,.2);transform:rotate(21deg)}
+  .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:900;color:#b9d9ca}
+  h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,62px);line-height:.99;letter-spacing:0;max-width:980px}
+  .sub{margin-top:14px;color:rgba(255,253,246,.78);font-size:16px;line-height:1.58;max-width:920px}
+  .control{border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:18px;display:grid;gap:12px;align-content:space-between;min-height:164px}
+  .control .text{font-size:14px;color:var(--muted);line-height:1.6}
+  .buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  button{min-height:42px;border:1px solid var(--ink);border-radius:6px;background:var(--ink);color:var(--panel);font-weight:900;cursor:pointer}
+  button.alt{background:transparent;color:var(--ink)}
+  button.good{background:var(--green);border-color:var(--green)}
+  button.bad{background:var(--red);border-color:var(--red)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button:hover:not(:disabled){transform:translateY(-1px)}
+  .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:16px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:13px 14px;min-height:78px}
+  .stat strong{display:block;font-size:27px;line-height:1;color:var(--green)}
+  .stat span{display:block;color:var(--muted);font-size:12px;margin-top:8px;line-height:1.35}
+  .main{display:grid;grid-template-columns:minmax(760px,1.35fr) minmax(430px,.75fr);gap:16px;margin-top:16px}
+  .panel{background:rgba(255,253,246,.96);border:1px solid var(--line);border-radius:8px;padding:16px;box-shadow:var(--shadow)}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+  h2{margin:0;font-size:21px}
+  .hint{font-size:13px;color:var(--muted);line-height:1.55}
+  .chart{position:relative;height:612px;background:#fffaf0;border-radius:7px;overflow:hidden}
+  svg{width:100%;height:100%;display:block}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;color:var(--muted);font-size:13px}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .status{
+    position:absolute;left:18px;bottom:18px;background:rgba(17,20,15,.94);color:var(--panel);
+    border-radius:8px;padding:13px 14px;width:330px;box-shadow:0 18px 42px rgba(17,20,15,.22)
   }
-  .hero {
-    display: grid;
-    grid-template-columns: 1.25fr .75fr;
-    gap: 18px;
-    align-items: stretch;
+  .status b{font-size:17px}.status div{margin-top:6px;color:rgba(255,253,246,.72);font-size:12px;line-height:1.55}
+  .query{border:1px solid var(--line);background:#f8f3e5;border-radius:8px;padding:12px;margin-bottom:12px}
+  .query b{color:var(--green)}.query p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+  .rules{display:grid;gap:9px;margin-top:10px}
+  .rule{padding:11px 12px;border-radius:7px;font-size:14px;line-height:1.45;border:1px solid transparent}
+  .rule.good{background:var(--green2);color:#104b38;border-color:#b9d9ca}
+  .rule.bad{background:var(--red2);color:#8b3a32;border-color:#e2bcb6}
+  .rule small{display:block;margin-top:5px;color:var(--muted)}
+  .candidate-list{display:grid;gap:8px;max-height:318px;overflow:auto;padding-right:2px}
+  .candidate{
+    display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid var(--line);
+    border-radius:7px;background:#fffaf0;padding:9px
   }
-  .mast {
-    background: var(--ink);
-    color: var(--panel);
-    border-radius: 8px;
-    padding: 24px 28px;
-    min-height: 154px;
-    position: relative;
-    overflow: hidden;
-  }
-  .mast::after {
-    content: "";
-    position: absolute;
-    right: -70px;
-    top: -76px;
-    width: 260px;
-    height: 260px;
-    border: 36px solid rgba(184,217,201,.22);
-    transform: rotate(18deg);
-  }
-  .eyebrow {
-    font-size: 12px;
-    letter-spacing: .16em;
-    color: var(--green-2);
-    font-weight: 800;
-    text-transform: uppercase;
-  }
-  h1 {
-    margin: 14px 0 0;
-    font-size: clamp(34px, 4.8vw, 66px);
-    line-height: .98;
-    letter-spacing: 0;
-    max-width: 920px;
-  }
-  .hero-sub {
-    margin-top: 14px;
-    color: rgba(255,253,246,.78);
-    font-size: 17px;
-    line-height: 1.55;
-    max-width: 760px;
-  }
-  .control-card {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 154px;
-  }
-  .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  button {
-    border: 1px solid var(--ink);
-    background: var(--ink);
-    color: var(--panel);
-    border-radius: 6px;
-    min-height: 42px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-  button.alt { background: transparent; color: var(--ink); }
-  button:hover { transform: translateY(-1px); }
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-top: 18px;
-  }
-  .stat {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 14px 16px;
-    min-height: 82px;
-  }
-  .stat strong {
-    display: block;
-    font-size: 30px;
-    color: var(--green);
-    line-height: 1;
-  }
-  .stat span {
-    display: block;
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 8px;
-  }
-  .main {
-    margin-top: 18px;
-    display: grid;
-    grid-template-columns: minmax(680px, 1.35fr) minmax(360px, .75fr);
-    gap: 18px;
-  }
-  .panel {
-    background: rgba(255,253,246,.94);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-  }
-  .panel-head {
-    display: flex;
-    justify-content: space-between;
-    gap: 18px;
-    align-items: start;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 12px;
-    margin-bottom: 12px;
-  }
-  .panel h2 {
-    margin: 0;
-    font-size: 21px;
-  }
-  .hint {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .chart {
-    height: 560px;
-    position: relative;
-  }
-  svg { width: 100%; height: 100%; display: block; }
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    color: var(--muted);
-    font-size: 13px;
-    margin-top: 10px;
-  }
-  .swatch {
-    display: inline-block;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    margin-right: 6px;
-    vertical-align: -1px;
-  }
-  .rules {
-    display: grid;
-    gap: 10px;
-  }
-  .rule {
-    border-radius: 7px;
-    padding: 12px;
-    font-size: 14px;
-    line-height: 1.5;
-    border: 1px solid transparent;
-  }
-  .rule.good { background: #e2efe8; color: #104c39; border-color: #b7d5c7; }
-  .rule.bad { background: #f4dfdc; color: #8d382f; border-color: #e5bdb7; }
-  .rule small { display: block; color: var(--muted); margin-top: 4px; }
-  .mini-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 14px;
-  }
-  .mini {
-    border: 1px solid var(--line);
-    border-radius: 7px;
-    padding: 12px;
-    background: #fffaf0;
-  }
-  .mini b { color: var(--green); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 12px;
-    font-size: 13px;
-  }
-  th, td {
-    padding: 8px 6px;
-    border-bottom: 1px solid #e5e0d1;
-    text-align: left;
-    white-space: nowrap;
-  }
-  th {
-    color: var(--muted);
-    font-weight: 800;
-  }
-  .flow {
-    margin-top: 18px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-  .step {
-    background: var(--panel);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    min-height: 116px;
-    padding: 16px;
-  }
-  .step b {
-    display: block;
-    color: var(--green);
-    margin-bottom: 8px;
-  }
-  .step p {
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.55;
-    font-size: 13px;
-  }
-  .car-card {
-    position: absolute;
-    right: 24px;
-    bottom: 24px;
-    width: 255px;
-    background: rgba(21,23,17,.92);
-    color: var(--panel);
-    border-radius: 8px;
-    padding: 14px;
-    box-shadow: 0 18px 50px rgba(21,23,17,.22);
-  }
-  .car-card .name { font-size: 18px; font-weight: 900; }
-  .car-card .meta { color: rgba(255,253,246,.7); margin-top: 7px; font-size: 12px; line-height: 1.55; }
-  .bar {
-    height: 8px;
-    background: rgba(255,255,255,.14);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 10px;
-  }
-  .bar > i { display: block; height: 100%; background: var(--green-2); width: 0%; }
-  @media (max-width: 1080px) {
-    .hero, .main, .flow { grid-template-columns: 1fr; }
-    .stats { grid-template-columns: repeat(2, 1fr); }
-  }
+  .candidate.good{border-color:#8fc2aa;background:#edf8f2}.candidate.bad{border-color:#d49a92;background:#fff0ee}
+  .candidate .name{font-weight:900}.candidate .meta{font-size:12px;color:var(--muted);margin-top:3px}
+  .candidate .actions{display:flex;gap:5px}.candidate .actions button{min-height:30px;padding:0 8px;font-size:12px}
+  .commit{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .empty{padding:16px;border:1px dashed var(--line);border-radius:7px;color:var(--muted);font-size:13px;line-height:1.6;background:#fffaf0}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;min-height:112px}
+  .step b{display:block;color:var(--green);margin-bottom:8px}.step p{margin:0;color:var(--muted);font-size:13px;line-height:1.55}
+  .badge{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:900;margin-left:5px}
+  .badge.good{background:var(--green2);color:var(--green)}.badge.bad{background:var(--red2);color:var(--red)}
+  @media(max-width:1120px){.hero,.main,.flow{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 <div class="shell">
   <section class="hero">
     <div class="mast">
-      <div class="eyebrow">XIMEA-DRSA · car buying decision demo</div>
-      <h1>让算法像销售顾问一样，越问越懂你想买什么车</h1>
-      <div class="hero-sub">现场演示：价格、续航、保养成本、性能相互冲突。决策者只标注少量车型 good / bad，系统归纳可解释规则，再把下一代候选车型推向偏好区域。</div>
+      <div class="eyebrow">Omega 122 (2024) 102925 · XIMEA-DRSA live demo</div>
+      <h1>现场跑一次论文实验：你来选择解，算法继续进化</h1>
+      <div class="sub">模拟论文中的多目标背包 MOKP。每 25 代暂停一次，展示当前非支配解；你亲自把参考解标为 good / bad，系统归纳 DRSA 规则，再把种群云点推向你偏好的 Pareto 区域。</div>
     </div>
-    <div class="control-card">
+    <div class="control">
       <div>
-        <div class="eyebrow" style="color:var(--green)">现场控制台</div>
-        <div class="hint" style="margin-top:10px;">不需要本地环境，不需要联网库。GitHub Pages 打开后直接点按钮即可演示。</div>
+        <div class="eyebrow" style="color:var(--green)">classroom controls</div>
+        <div class="text">演示建议：先点“跑到下一次查询”，到第 25 代后在右侧选择 good / bad，再提交偏好继续。整个页面是 GitHub Pages 静态网页，不依赖 localhost。</div>
       </div>
       <div class="buttons">
-        <button onclick="runRound()">运行一次交互</button>
-        <button onclick="autoRun()">自动运行 6 轮</button>
-        <button class="alt" onclick="resetDemo()">重置演示</button>
-        <button class="alt" onclick="togglePreference()">切换偏好</button>
+        <button onclick="runToQuery()" id="runBtn">跑到下一次查询</button>
+        <button onclick="stepOne()" id="stepBtn">单步 1 代</button>
+        <button class="alt" onclick="resetDemo()">重置</button>
+        <button class="alt" onclick="demoPreference('balanced')">示范偏好A</button>
+        <button class="alt" onclick="demoPreference('f1')">示范偏好B</button>
+        <button class="alt" onclick="toggleLabels()">标签</button>
       </div>
     </div>
   </section>
 
   <section class="stats">
-    <div class="stat"><strong id="round">0</strong><span>交互轮次</span></div>
-    <div class="stat"><strong id="bestName">--</strong><span>当前推荐车型</span></div>
-    <div class="stat"><strong id="bestScore">--</strong><span>隐藏满意度分数</span></div>
-    <div class="stat"><strong id="ruleCount">0</strong><span>累计可解释规则</span></div>
+    <div class="stat"><strong id="gen">0</strong><span>当前进化代数</span></div>
+    <div class="stat"><strong id="frontCount">--</strong><span>当前非支配解数量</span></div>
+    <div class="stat"><strong id="ruleCount">0</strong><span>累计规则数量</span></div>
+    <div class="stat"><strong id="goodRuleCount">0</strong><span>好规则数量</span></div>
+    <div class="stat"><strong id="badRuleCount">0</strong><span>坏规则数量</span></div>
+    <div class="stat"><strong id="queryState">运行中</strong><span>交互状态</span></div>
   </section>
 
   <section class="main">
     <div class="panel">
-      <div class="panel-head">
+      <div class="head">
         <div>
-          <h2>车型候选空间</h2>
-          <div class="hint">横轴价格，越左越便宜；纵轴续航，越上越高。点越大代表综合规则得分越高。</div>
+          <h2>种群云点与 Pareto 前沿变化</h2>
+          <div class="hint">横轴 `f1`、纵轴 `f2`，都代表背包收益，越大越好。金色为当前非支配解；绿色和红色分别显示你本轮选择的 good / bad 参考解。</div>
         </div>
-        <div class="hint" id="prefText">当前偏好：预算敏感，同时要求续航可靠。</div>
+        <div class="hint">每次提交偏好后，新规则会进入排序得分：匹配好规则加分，匹配坏规则扣分。</div>
       </div>
       <div class="chart">
-        <svg id="chart" viewBox="0 0 820 560"></svg>
-        <div class="car-card" id="bestCard"></div>
+        <svg id="chart" viewBox="0 0 940 620"></svg>
+        <div class="status" id="statusBox"></div>
       </div>
       <div class="legend">
-        <span><i class="swatch" style="background:var(--ink)"></i>普通候选车</span>
-        <span><i class="swatch" style="background:var(--green)"></i>本轮 good</span>
-        <span><i class="swatch" style="background:var(--red)"></i>本轮 bad</span>
-        <span><i class="swatch" style="background:var(--blue)"></i>当前推荐</span>
-        <span><i class="swatch" style="background:var(--gold)"></i>Pareto 前沿</span>
+        <span><i class="dot" style="background:var(--gold)"></i>非支配解</span>
+        <span><i class="dot" style="background:var(--green)"></i>你选的 good</span>
+        <span><i class="dot" style="background:var(--red)"></i>你选的 bad</span>
+        <span><i class="dot" style="background:var(--blue)"></i>规则得分最高</span>
+        <span><i class="dot" style="background:var(--ink)"></i>普通种群解</span>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h2>DRSA 规则与参考车型</h2>
-          <div class="hint">这里用隐藏函数模拟决策者；课堂上可以说明真实论文由人手动分类。</div>
-        </div>
+      <div class="query" id="queryBox"></div>
+      <h2>第 25 代查询：请选择参考解</h2>
+      <div class="hint" style="margin:7px 0 10px;">点击点云上的紫色候选点，或在下方列表中标记 good / bad。至少选择 1 个 good 和 1 个 bad 后提交。</div>
+      <div class="candidate-list" id="candidates"></div>
+      <div class="commit">
+        <button class="good" onclick="submitPreference()" id="submitBtn">提交偏好并继续</button>
+        <button class="alt" onclick="clearMarks()">清空本轮选择</button>
       </div>
-      <div class="rules" id="rules"></div>
-      <div class="mini-grid">
-        <div class="mini"><b>good 规则</b><div class="hint">匹配越多，车型越容易被保留并作为父代。</div></div>
-        <div class="mini"><b>bad 规则</b><div class="hint">匹配越多，车型越容易在排序中后移。</div></div>
-      </div>
-      <table>
-        <thead><tr><th>车型</th><th>价格</th><th>续航</th><th>判断</th></tr></thead>
-        <tbody id="refs"></tbody>
-      </table>
+      <h2 style="margin-top:16px;">DRSA 归纳规则</h2>
+      <div id="rules" class="rules"></div>
     </div>
   </section>
 
   <section class="flow">
-    <div class="step"><b>1. 生成车型</b><p>随机产生一批候选车，每辆车有价格、续航、保养费、性能四个属性。</p></div>
-    <div class="step"><b>2. 轻量交互</b><p>每轮只展示 6 辆参考车，决策者只需判断 good 或 bad。</p></div>
-    <div class="step"><b>3. 诱导规则</b><p>从分类样本中归纳 if-then 规则，例如“价格不高且续航够长”。</p></div>
-    <div class="step"><b>4. 引导进化</b><p>规则得分进入排序，交叉变异后，新车型更靠近偏好区域。</p></div>
+    <div class="step"><b>1. 跑 25 代</b><p>系统像 MOEA 一样生成、选择、交叉、变异，形成一批多目标候选解。</p></div>
+    <div class="step"><b>2. 你选择解</b><p>暂停时展示当前非支配解，你把几个点标为 good / bad，模拟论文中的决策者。</p></div>
+    <div class="step"><b>3. 生成规则</b><p>DRSA 用你的分类归纳阈值规则，例如 `if f1≥q1 and f2≥q2 then GOOD`。</p></div>
+    <div class="step"><b>4. 继续进化</b><p>规则改变种群排序，云点会继续向你偏好的 Pareto 子区域聚焦。</p></div>
   </section>
 </div>
 
 <script>
-const N = 90;
-const K = 6;
-const MAX_RULES = 12;
-const GAMMA = 0.32;
-const names = ["Aster", "Boreal", "CivicOne", "Dawn EV", "Edge", "Flux", "Gala", "Horizon", "Ion", "Juno", "Kite", "Luma", "Metro", "Nova", "Orbit", "Pulse", "Quartz", "Rover", "Sol", "Tempo"];
-let cars = [];
-let refs = [];
-let rules = [];
-let round = 0;
-let prefMode = 0;
-let timer = null;
+const N=128, QUERY=25, MAX_RULES=14, GAMMA=.18;
+let pop=[], gen=0, rules=[], queryOpen=false, refs=[], labels=true, running=false;
 
-function rnd(a,b){ return a + Math.random()*(b-a); }
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-function carName(i){ return names[i % names.length] + " " + (100 + (i * 17) % 880); }
-function makeCar(i, price, range, maint, power){
-  return { id: i, name: carName(i), price: clamp(price, 8, 45), range: clamp(range, 280, 760), maint: clamp(maint, 0.4, 2.4), power: clamp(power, 80, 360), score: 0, rank: 0 };
-}
-function utility(c){
-  if(prefMode === 0){
-    return 100 - (1.42*c.price) + (0.078*c.range) - (10.5*c.maint) + (0.018*c.power);
-  }
-  return 100 - (0.82*c.price) + (0.045*c.range) - (7.2*c.maint) + (0.105*c.power);
-}
+function rnd(a,b){return a+Math.random()*(b-a)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function make(id,f1,f2){return {id,f1:clamp(f1,2920,3920),f2:clamp(f2,2820,3940),rank:0,score:0,mark:""}}
 function resetDemo(){
-  if(timer) clearInterval(timer);
-  timer = null;
-  round = 0; refs = []; rules = [];
-  cars = Array.from({length:N}, (_,i)=> makeCar(i+1, rnd(10,43), rnd(300,720), rnd(.55,2.2), rnd(90,330)));
-  evaluate();
-  render();
+  gen=0;rules=[];refs=[];queryOpen=false;running=false;
+  pop=Array.from({length:N},(_,i)=>make(i+1,rnd(3000,3820),rnd(2880,3820)));
+  evaluate();render();
 }
-function togglePreference(){
-  prefMode = prefMode ? 0 : 1;
-  document.getElementById("prefText").textContent = prefMode === 0 ? "当前偏好：预算敏感，同时要求续航可靠。" : "当前偏好：愿意多花钱，但更看重性能和驾驶体验。";
-  runRound();
-}
-function dominates(a,b){
-  const betterOrEqual = a.price <= b.price && a.range >= b.range && a.maint <= b.maint && a.power >= b.power;
-  const strictly = a.price < b.price || a.range > b.range || a.maint < b.maint || a.power > b.power;
-  return betterOrEqual && strictly;
-}
-function rankFronts(list){
-  const remaining = [...list];
-  let rank = 1;
-  while(remaining.length){
-    const front = remaining.filter(x => !remaining.some(y => y !== x && dominates(y,x)));
-    front.forEach(x => x.rank = rank);
-    front.forEach(x => remaining.splice(remaining.indexOf(x),1));
+function dominates(a,b){return a.f1>=b.f1&&a.f2>=b.f2&&(a.f1>b.f1||a.f2>b.f2)}
+function rankFronts(){
+  const left=[...pop];let rank=1;
+  while(left.length){
+    const front=left.filter(x=>!left.some(y=>y!==x&&dominates(y,x)));
+    front.forEach(x=>x.rank=rank);
+    front.forEach(x=>left.splice(left.indexOf(x),1));
     rank++;
   }
 }
-function w(rule){ return Math.exp(-GAMMA * (round - rule.born)); }
-function matches(c,r){
-  if(r.type === "good") return c.price <= r.price && c.range >= r.range && c.maint <= r.maint;
-  return c.price >= r.price || c.range <= r.range || c.maint >= r.maint;
+function weight(r){return Math.exp(-GAMMA*((gen-r.born)/QUERY))}
+function match(x,r){
+  if(r.type==="good") return x.f1>=r.q1 && x.f2>=r.q2;
+  if(r.axis==="f1") return x.f1<=r.q1;
+  return x.f2<=r.q2;
 }
 function evaluate(){
-  rankFronts(cars);
-  cars.forEach(c => {
-    const good = rules.filter(r => r.type === "good" && matches(c,r)).reduce((s,r)=>s+w(r),0);
-    const bad = rules.filter(r => r.type === "bad" && matches(c,r)).reduce((s,r)=>s+w(r),0);
-    c.score = good - bad;
+  rankFronts();
+  pop.forEach(x=>{
+    const good=rules.filter(r=>r.type==="good"&&match(x,r)).reduce((s,r)=>s+weight(r),0);
+    const bad=rules.filter(r=>r.type==="bad"&&match(x,r)).reduce((s,r)=>s+weight(r),0);
+    x.score=good-bad;
   });
-  cars.sort((a,b)=> a.rank-b.rank || b.score-a.score || utility(b)-utility(a));
+  pop.sort((a,b)=>a.rank-b.rank||b.score-a.score||(b.f1+b.f2)-(a.f1+a.f2));
 }
-function pickRefs(){
+function evolveOne(){
+  if(queryOpen) return;
   evaluate();
-  const pool = cars.slice(0, Math.min(32,cars.length));
-  const picked = [];
-  const used = new Set();
-  while(picked.length<K && used.size<pool.length){
-    const idx = Math.floor(Math.random()*pool.length);
-    if(!used.has(idx)){ used.add(idx); picked.push(pool[idx]); }
-  }
-  picked.sort((a,b)=>utility(b)-utility(a));
-  const threshold = utility(picked[Math.floor(K/2)-1]);
-  return picked.map(c => ({...c, label: utility(c) >= threshold ? "good" : "bad"}));
-}
-function induce(){
-  const good = refs.filter(x=>x.label==="good");
-  const bad = refs.filter(x=>x.label==="bad");
-  if(good.length){
-    rules.push({ type:"good", price: Math.ceil(Math.max(...good.map(x=>x.price))), range: Math.floor(Math.min(...good.map(x=>x.range))), maint: +(Math.max(...good.map(x=>x.maint))).toFixed(1), born: round });
-  }
-  if(bad.length){
-    rules.push({ type:"bad", price: Math.floor(Math.min(...bad.map(x=>x.price))), range: Math.ceil(Math.max(...bad.map(x=>x.range))), maint: +(Math.min(...bad.map(x=>x.maint))).toFixed(1), born: round });
-  }
-  while(rules.length > MAX_RULES) rules.shift();
-}
-function evolve(){
-  evaluate();
-  const elite = cars.slice(0,20);
-  const next = elite.map((c,i)=>makeCar(i+1,c.price,c.range,c.maint,c.power));
+  const elite=pop.slice(0,26);
+  const next=elite.map((x,i)=>make(i+1,x.f1,x.f2));
   while(next.length<N){
-    const a = elite[Math.floor(Math.random()*elite.length)];
-    const b = elite[Math.floor(Math.random()*elite.length)];
-    next.push(makeCar(next.length+1,
-      (a.price+b.price)/2 + rnd(-3.2,2.2),
-      (a.range+b.range)/2 + rnd(-38,48),
-      (a.maint+b.maint)/2 + rnd(-.18,.18),
-      (a.power+b.power)/2 + rnd(-22,28)
-    ));
+    const a=elite[Math.floor(Math.random()*elite.length)];
+    const b=elite[Math.floor(Math.random()*elite.length)];
+    let drift1=8, drift2=8;
+    const latestGood=[...rules].reverse().find(r=>r.type==="good");
+    if(latestGood){ drift1 = a.f1<latestGood.q1 ? 15 : 4; drift2 = a.f2<latestGood.q2 ? 15 : 4; }
+    next.push(make(next.length+1,(a.f1+b.f1)/2+rnd(-32,38)+drift1,(a.f2+b.f2)/2+rnd(-32,38)+drift2));
   }
-  cars = next;
-  evaluate();
+  pop=next;gen++;evaluate();
+  if(gen>0 && gen%QUERY===0) openQuery();
 }
-function runRound(){
-  round++;
-  refs = pickRefs();
-  induce();
-  for(let i=0;i<8;i++) evolve();
+function front(){evaluate();return pop.filter(x=>x.rank===1).sort((a,b)=>a.f1-b.f1)}
+function openQuery(){
+  queryOpen=true;running=false;
+  const f=front();
+  const picks=[];
+  const count=Math.min(9,f.length);
+  for(let i=0;i<count;i++){
+    const idx=Math.round(i*(f.length-1)/(count-1||1));
+    picks.push({...f[idx], mark:""});
+  }
+  refs=picks;
   render();
 }
-function autoRun(){
-  if(timer) clearInterval(timer);
-  let n = 0;
-  timer = setInterval(()=>{
-    runRound();
-    n++;
-    if(n>=6){ clearInterval(timer); timer = null; }
-  }, 850);
+function stepOne(){ if(!queryOpen){ evolveOne(); render(); } }
+function runToQuery(){
+  if(queryOpen||running) return;
+  running=true;
+  const tick=()=>{ 
+    if(queryOpen||!running){running=false;render();return}
+    evolveOne();render();
+    if(!queryOpen) setTimeout(tick,70);
+  };
+  tick();
 }
-function sx(price){ return 74 + (price-8)/(45-8)*650; }
-function sy(range){ return 478 - (range-280)/(760-280)*380; }
-function colorFor(c, bestId, refMap){
-  if(c.id === bestId) return "var(--blue)";
-  if(refMap.get(c.id)==="good") return "var(--green)";
-  if(refMap.get(c.id)==="bad") return "var(--red)";
-  if(c.rank===1) return "var(--gold)";
-  return "var(--ink)";
+function setMark(id,mark){
+  refs=refs.map(x=>x.id===id?{...x,mark:x.mark===mark?"":mark}:x);
+  render();
+}
+function clearMarks(){refs=refs.map(x=>({...x,mark:""}));render()}
+function submitPreference(){
+  const good=refs.filter(x=>x.mark==="good"), bad=refs.filter(x=>x.mark==="bad");
+  if(!good.length||!bad.length){alert("请至少选择 1 个 good 和 1 个 bad。");return}
+  const gq1=Math.floor(Math.min(...good.map(x=>x.f1)));
+  const gq2=Math.floor(Math.min(...good.map(x=>x.f2)));
+  rules.push({type:"good",q1:gq1,q2:gq2,born:gen});
+  const bq1=Math.ceil(Math.max(...bad.map(x=>x.f1)));
+  const bq2=Math.ceil(Math.max(...bad.map(x=>x.f2)));
+  rules.push({type:"bad",axis:"f1",q1:bq1,q2:null,born:gen});
+  rules.push({type:"bad",axis:"f2",q1:null,q2:bq2,born:gen});
+  while(rules.length>MAX_RULES) rules.shift();
+  queryOpen=false;refs=[];evaluate();render();
+}
+function demoPreference(mode){
+  if(!queryOpen) openQuery();
+  if(mode==="balanced"){
+    refs=refs.map(x=>({...x,mark:(x.f1>3720&&x.f2>3720)?"good":(x.f1<3650||x.f2<3650)?"bad":x.mark}));
+  }else{
+    refs=refs.map(x=>({...x,mark:(x.f1>3820)?"good":(x.f1<3700)?"bad":x.mark}));
+  }
+  render();
+}
+function toggleLabels(){labels=!labels;render()}
+function sx(v){return 78+(v-2920)/(3920-2920)*760}
+function sy(v){return 532-(v-2820)/(3940-2820)*440}
+function pointClass(x,bestId,refMap){
+  if(x.id===bestId) return "best";
+  if(refMap.get(x.id)==="good") return "good";
+  if(refMap.get(x.id)==="bad") return "bad";
+  if(refMap.has(x.id)) return "ref";
+  if(x.rank===1) return "front";
+  return "normal";
+}
+function color(cls){
+  return {best:"var(--blue)",good:"var(--green)",bad:"var(--red)",ref:"var(--violet)",front:"var(--gold)",normal:"var(--ink)"}[cls]
 }
 function renderChart(){
-  const svg = document.getElementById("chart");
-  const best = [...cars].sort((a,b)=>utility(b)-utility(a))[0];
-  const refMap = new Map(refs.map(x=>[x.id,x.label]));
-  const front = cars.filter(c=>c.rank===1).sort((a,b)=>a.price-b.price);
-  const frontLine = front.length>1 ? `<polyline points="${front.map(c=>`${sx(c.price)},${sy(c.range)}`).join(" ")}" fill="none" stroke="#c9922e" stroke-width="3" opacity=".8"/>` : "";
-  const axis = `
-    <rect x="0" y="0" width="820" height="560" fill="#fffdf6"/>
-    <rect x="74" y="98" width="650" height="380" fill="#f9f5e9" stroke="#d8d3c2"/>
-    <rect x="74" y="98" width="220" height="142" fill="#dceee5" opacity=".72"/>
-    <line x1="74" y1="478" x2="724" y2="478" stroke="#8d927f"/>
-    <line x1="74" y1="98" x2="74" y2="478" stroke="#8d927f"/>
-    <text x="310" y="530" fill="#697067" font-size="15">价格 price：越左越便宜</text>
-    <text x="24" y="84" fill="#697067" font-size="15">续航 range：越上越长</text>
-    <text x="102" y="128" fill="#1d6f55" font-size="14" font-weight="800">偏好区域</text>
-  `;
-  const points = cars.map(c=>{
-    const r = c.id===best.id ? 10 : Math.max(4, Math.min(9, 5 + c.score*1.3));
-    const op = c.rank===1 || refMap.has(c.id) || c.id===best.id ? .95 : .38;
-    return `<circle cx="${sx(c.price).toFixed(1)}" cy="${sy(c.range).toFixed(1)}" r="${r.toFixed(1)}" fill="${colorFor(c,best.id,refMap)}" opacity="${op}"><title>${c.name} price=${c.price.toFixed(1)} range=${c.range.toFixed(0)}</title></circle>`;
+  const f=front(), best=[...pop].sort((a,b)=>b.score-a.score||(b.f1+b.f2)-(a.f1+a.f2))[0];
+  const refMap=new Map(refs.map(x=>[x.id,x.mark||"ref"]));
+  const latestGood=[...rules].reverse().find(r=>r.type==="good");
+  const latestBadF1=[...rules].reverse().find(r=>r.type==="bad"&&r.axis==="f1");
+  const latestBadF2=[...rules].reverse().find(r=>r.type==="bad"&&r.axis==="f2");
+  const region=latestGood?`<rect x="${sx(latestGood.q1)}" y="92" width="${838-sx(latestGood.q1)}" height="${sy(latestGood.q2)-92}" fill="#dceee5" opacity=".55"/>`:"";
+  const bad1=latestBadF1?`<rect x="78" y="92" width="${sx(latestBadF1.q1)-78}" height="440" fill="#f2deda" opacity=".24"/>`:"";
+  const bad2=latestBadF2?`<rect x="78" y="${sy(latestBadF2.q2)}" width="760" height="${532-sy(latestBadF2.q2)}" fill="#f2deda" opacity=".24"/>`:"";
+  const axis=`<rect x="0" y="0" width="940" height="620" fill="#fffaf0"/>
+    <rect x="78" y="92" width="760" height="440" fill="#fbf6e8" stroke="#d8d2bf"/>
+    ${bad1}${bad2}${region}
+    <line x1="78" y1="532" x2="838" y2="532" stroke="#8e927f"/>
+    <line x1="78" y1="92" x2="78" y2="532" stroke="#8e927f"/>
+    <text x="380" y="582" font-size="15" fill="#656b61">f1：背包 1 收益，越大越好</text>
+    <text x="20" y="78" font-size="15" fill="#656b61">f2：背包 2 收益，越大越好</text>`;
+  const line=f.length>1?`<polyline points="${f.map(p=>`${sx(p.f1)},${sy(p.f2)}`).join(" ")}" fill="none" stroke="#c5902e" stroke-width="3" opacity=".85"/>`:"";
+  const pts=pop.map(x=>{
+    const cls=pointClass(x,best.id,refMap), r=cls==="best"?9:cls==="good"||cls==="bad"?8:cls==="ref"?7:cls==="front"?5.6:3.8;
+    const op=cls==="normal"?.32:.95;
+    const click=refMap.has(x.id)?`onclick="setMark(${x.id},'${refMap.get(x.id)==='good'?'bad':'good'}')"`:"";
+    const lab=labels&&(cls==="best"||cls==="good"||cls==="bad"||cls==="ref")?`<text x="${sx(x.f1)+8}" y="${sy(x.f2)-7}" font-size="11" fill="#11140f">#${x.id}</text>`:"";
+    return `<circle ${click} cx="${sx(x.f1).toFixed(1)}" cy="${sy(x.f2).toFixed(1)}" r="${r}" fill="${color(cls)}" opacity="${op}" style="cursor:${refMap.has(x.id)?"pointer":"default"}"><title>#${x.id} f1=${x.f1.toFixed(0)} f2=${x.f2.toFixed(0)} score=${x.score.toFixed(2)}</title></circle>${lab}`;
   }).join("");
-  svg.innerHTML = axis + frontLine + points;
+  document.getElementById("chart").innerHTML=axis+line+pts;
+  document.getElementById("statusBox").innerHTML=`<b>${queryOpen?"已暂停：请你选择 good / bad":"运行中：等待下一次查询"}</b><div>当前第 ${gen} 代。非支配解 ${f.length} 个。规则得分最高解 #${best.id}：f1=${best.f1.toFixed(0)}，f2=${best.f2.toFixed(0)}，score=${best.score.toFixed(2)}。</div>`;
+}
+function renderCandidates(){
+  const box=document.getElementById("candidates");
+  if(!queryOpen){box.innerHTML=`<div class="empty">还未到查询点。点击“跑到下一次查询”，系统会在第 ${Math.ceil((gen+1)/QUERY)*QUERY} 代暂停，并列出当前非支配参考解供你选择。</div>`;return}
+  box.innerHTML=refs.map(x=>`<div class="candidate ${x.mark}">
+    <div><div class="name">#${x.id} ${x.mark?`<span class="badge ${x.mark}">${x.mark.toUpperCase()}</span>`:""}</div>
+    <div class="meta">f1=${x.f1.toFixed(0)} · f2=${x.f2.toFixed(0)} · score=${x.score.toFixed(2)}</div></div>
+    <div class="actions"><button class="good" onclick="setMark(${x.id},'good')">Good</button><button class="bad" onclick="setMark(${x.id},'bad')">Bad</button></div>
+  </div>`).join("");
 }
 function renderRules(){
-  const box = document.getElementById("rules");
-  if(!rules.length){
-    box.innerHTML = `<div class="hint">暂无规则。点击“运行一次交互”后，这里会出现从 good / bad 车型中归纳出的 if-then 规则。</div>`;
-    return;
-  }
-  box.innerHTML = rules.slice(-5).reverse().map(r=>{
-    const cls = r.type==="good" ? "good" : "bad";
-    const text = r.type==="good"
-      ? `if 价格 ≤ ${r.price}万 且 续航 ≥ ${r.range}km 且 保养 ≤ ${r.maint}k, then GOOD`
-      : `if 价格 ≥ ${r.price}万 或 续航 ≤ ${r.range}km 或 保养 ≥ ${r.maint}k, then BAD`;
-    return `<div class="rule ${cls}">${text}<small>born=${r.born}，时间衰减后当前权重=${w(r).toFixed(2)}</small></div>`;
+  const box=document.getElementById("rules");
+  if(!rules.length){box.innerHTML=`<div class="empty">暂无规则。提交第一轮 good / bad 后，将生成一条好规则和两条坏规则。</div>`;return}
+  box.innerHTML=rules.slice().reverse().map(r=>{
+    const text=r.type==="good"?`if f1(x) ≥ ${r.q1} and f2(x) ≥ ${r.q2}, then GOOD`:
+      r.axis==="f1"?`if f1(x) ≤ ${r.q1}, then BAD`:`if f2(x) ≤ ${r.q2}, then BAD`;
+    return `<div class="rule ${r.type}">${text}<small>born generation=${r.born}，当前时间衰减权重=${weight(r).toFixed(2)}</small></div>`;
   }).join("");
 }
-function renderRefs(){
-  const body = document.getElementById("refs");
-  if(!refs.length){
-    body.innerHTML = `<tr><td colspan="4" style="color:var(--muted)">等待第一次交互。</td></tr>`;
-    return;
-  }
-  body.innerHTML = refs.map(c=>`<tr>
-    <td>${c.name}</td>
-    <td>${c.price.toFixed(1)}万</td>
-    <td>${c.range.toFixed(0)}km</td>
-    <td style="font-weight:900;color:${c.label==="good" ? "var(--green)" : "var(--red)"}">${c.label.toUpperCase()}</td>
-  </tr>`).join("");
+function renderStats(){
+  const f=front();
+  document.getElementById("gen").textContent=gen;
+  document.getElementById("frontCount").textContent=f.length;
+  document.getElementById("ruleCount").textContent=rules.length;
+  document.getElementById("goodRuleCount").textContent=rules.filter(r=>r.type==="good").length;
+  document.getElementById("badRuleCount").textContent=rules.filter(r=>r.type==="bad").length;
+  document.getElementById("queryState").textContent=queryOpen?"待选择":"运行中";
+  document.getElementById("queryBox").innerHTML=queryOpen?`<b>第 ${gen} 代查询已触发</b><p>当前展示 ${refs.length} 个非支配参考解。请选出你认为相对好的解和相对差的解，提交后算法继续跑。</p>`:
+    `<b>还未暂停</b><p>论文中每隔 τ 代询问一次决策者。这里设置 τ=25，便于课堂现场演示。</p>`;
+  document.getElementById("runBtn").disabled=queryOpen||running;
+  document.getElementById("stepBtn").disabled=queryOpen||running;
+  document.getElementById("submitBtn").disabled=!queryOpen;
 }
-function renderBest(){
-  const best = [...cars].sort((a,b)=>utility(b)-utility(a))[0];
-  document.getElementById("bestName").textContent = best.name.split(" ")[0];
-  document.getElementById("bestScore").textContent = utility(best).toFixed(1);
-  document.getElementById("bestCard").innerHTML = `
-    <div class="name">${best.name}</div>
-    <div class="meta">价格 ${best.price.toFixed(1)} 万 · 续航 ${best.range.toFixed(0)} km<br>保养 ${best.maint.toFixed(1)}k/年 · 性能 ${best.power.toFixed(0)} hp</div>
-    <div class="bar"><i style="width:${Math.max(8,Math.min(100,utility(best))).toFixed(1)}%"></i></div>
-  `;
-}
-function render(){
-  evaluate();
-  document.getElementById("round").textContent = round;
-  document.getElementById("ruleCount").textContent = rules.length;
-  renderBest();
-  renderChart();
-  renderRules();
-  renderRefs();
-}
+function render(){evaluate();renderStats();renderChart();renderCandidates();renderRules()}
 resetDemo();
 </script>
 </body>
